@@ -3,11 +3,13 @@
 namespace TomatoPHP\FilamentFcm\Console;
 
 use Illuminate\Console\Command;
+use TomatoPHP\ConsoleHelpers\Traits\HandleStub;
 use TomatoPHP\ConsoleHelpers\Traits\RunCommand;
 
 class FilamentFcmInstall extends Command
 {
     use RunCommand;
+    use HandleStub;
 
     /**
      * The name and signature of the console command.
