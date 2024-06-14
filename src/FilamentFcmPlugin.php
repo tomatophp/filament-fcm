@@ -1,6 +1,6 @@
 <?php
 
-namespace TomatoPHP\FilamentAlerts;
+namespace TomatoPHP\FilamentFcm;
 
 use Filament\Contracts\Plugin;
 use Filament\Notifications\Actions\Action;
