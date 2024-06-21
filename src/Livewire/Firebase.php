@@ -14,10 +14,12 @@ class Firebase extends Component
     {
         if(auth()->user()){
             $user = auth()->user();
-            $user->setFCM('fcm-web')->userTokensFcm()->firstOrCreate([
-                'provider' => 'fcm-web',
-                'provider_token' => $token
-            ]);
+            if(!$user->setFCM('fcm-web')->userTokensFcm()->where('provider', 'fcm-web')->first()){
+                $user->setFCM('fcm-web')->userTokensFcm()->create([
+                    'provider' => 'fcm-web',
+                    'provider_token' => $token
+                ]);
+            }
         }
     }
 

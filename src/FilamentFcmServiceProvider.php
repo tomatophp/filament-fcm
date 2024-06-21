@@ -2,6 +2,10 @@
 
 namespace TomatoPHP\FilamentFcm;
 
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Actions\ActionGroup;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use TomatoPHP\FilamentFcm\Livewire\Firebase;
@@ -45,6 +49,34 @@ class FilamentFcmServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //you boot methods here
+
+        Notification::macro('sendToFCM', function (Model $user, array $data=[]): static
+        {
+            /** @var Notification $this */
+            $user->notifyFCMSDK(
+                title: $this->title,
+                message: $this->body,
+                type: 'fcm-web',
+                url: count($this->actions)? $this->actions[0]->getUrl()  : null,
+                icon: $this->icon,
+                data: [
+                    'url' => count($this->actions)? $this->actions[0]->getUrl()  : null,
+                    'id' => $this->getId(),
+                    'actions' => array_map(fn (Action | ActionGroup $action): array => $action->toArray(), $this->getActions()),
+                    'body' => $this->getBody(),
+                    'color' => $this->getColor(),
+                    'duration' => $this->getDuration(),
+                    'icon' => $this->getIcon(),
+                    'iconColor' => $this->getIconColor(),
+                    'status' => $this->getStatus(),
+                    'title' => $this->getTitle(),
+                    'view' => $this->getView(),
+                    'viewData' => $this->getViewData(),
+                    'data'=> $data
+                ]
+            );
+
+            return $this;
+        });
     }
 }

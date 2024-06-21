@@ -13,9 +13,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use TomatoPHP\FilamentAlerts\Mail\SendEmail;
-use TomatoPHP\FilamentAlerts\Models\NotificationsLogs;
-use TomatoPHP\FilamentAlerts\Notifications\FCMNotificationService;
+use TomatoPHP\FilamentFcm\Notifications\FCMNotificationService;
 
 class NotifyFCMJob implements ShouldQueue
 {
