@@ -27,6 +27,7 @@ class NotifyFCMJob implements ShouldQueue
     public ?string $url;
     public ?string $type;
     public ?array $data;
+    public ?bool $sendToDatabase = true;
 
     /**
      * Create a new notification instance.
@@ -43,6 +44,7 @@ class NotifyFCMJob implements ShouldQueue
         $this->image  = $arrgs['image'];
         $this->type  = $arrgs['type'];
         $this->data  = $arrgs['data'];
+        $this->sendToDatabase  = $arrgs['sendToDatabase'];
     }
 
     /**
@@ -60,6 +62,7 @@ class NotifyFCMJob implements ShouldQueue
             $this->image,
             $this->url,
             $this->data,
+            $this->sendToDatabase,
         ));
     }
 }

@@ -55,16 +55,29 @@ class Firebase extends Component
             }
         }
 
-        Notification::make($data['data']['id'])
-            ->title($data['data']['title'])
-            ->actions($actions)
-            ->body($data['data']['body'])
-            ->icon($data['data']['icon'])
-            ->iconColor($data['data']['iconColor'])
-            ->color($data['data']['color'])
-            ->duration($data['data']['duration'])
-            ->send()
-            ->sendToDatabase(auth()->user());
+        if(isset($data['data']['sendToDatabase']) && $data['data']['sendToDatabase'] === true){
+            Notification::make($data['data']['id'])
+                ->title($data['data']['title'])
+                ->actions($actions)
+                ->body($data['data']['body'])
+                ->icon($data['data']['icon'])
+                ->iconColor($data['data']['iconColor'])
+                ->color($data['data']['color'])
+                ->duration($data['data']['duration'])
+                ->send()
+                ->sendToDatabase(auth()->user());
+        }
+        else {
+            Notification::make($data['data']['id'])
+                ->title($data['data']['title'])
+                ->actions($actions)
+                ->body($data['data']['body'])
+                ->icon($data['data']['icon'])
+                ->iconColor($data['data']['iconColor'])
+                ->color($data['data']['color'])
+                ->duration($data['data']['duration'])
+                ->send();
+        }
     }
 
     public function render()

@@ -18,7 +18,8 @@ trait InteractsWithFCM
         ?string $url=null,
         ?string $image=null,
         ?string $icon=null,
-        ?array $data=[]
+        ?array $data=[],
+        bool $sendToDatabase = true
     )
     {
         dispatch(new NotifyFCMJob([
@@ -30,6 +31,7 @@ trait InteractsWithFCM
             'url' => $url,
             'type' => $type,
             'data' => $data,
+            'sendToDatabase' => sendToDatabase,
         ]));
     }
 

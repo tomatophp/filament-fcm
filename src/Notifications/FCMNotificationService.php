@@ -22,6 +22,7 @@ class FCMNotificationService extends Notification
         public ?string $image=null,
         public ?string $url=null,
         public ?array $data=[],
+        public ?bool $sendToDatabase= true,
     )
     {}
 
@@ -57,7 +58,8 @@ class FCMNotificationService extends Notification
                     'title' => $this->data['title'],
                     'view' => $this->data['view'],
                     'viewData' => json_encode($this->data['viewData']),
-                    'data' => json_encode($this->data['data'])
+                    'data' => json_encode($this->data['data']),
+                    'sendToDatabase' =>$this->sendToDatabase
                 ],
                 custom: [
                     'android' => [

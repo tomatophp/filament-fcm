@@ -50,7 +50,7 @@ class FilamentFcmServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
-        Notification::macro('sendToFCM', function (Model $user, array $data=[]): static
+        Notification::macro('sendToFCM', function (Model $user, array $data=[], ?bool $sendToDatabase=true): static
         {
             /** @var Notification $this */
             $user->notifyFCMSDK(
@@ -73,7 +73,8 @@ class FilamentFcmServiceProvider extends ServiceProvider
                     'view' => $this->getView(),
                     'viewData' => $this->getViewData(),
                     'data'=> $data
-                ]
+                ],
+                sendToDatabase: $sendToDatabase
             );
 
             return $this;

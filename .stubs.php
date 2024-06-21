@@ -9,6 +9,6 @@ use Illuminate\Database\Eloquent\Model;
      */
     class Notification
     {
-        public function sendToFCM(Model $user, array $data=[]): static {}
+        public function sendToFCM(Model $user, array $data=[], ?bool $sendToDatabase = true): static {}
     }
 }
