@@ -1,6 +1,6 @@
 <?php
 
-namespace TomatoPHP\FilamentFCM\Jobs;
+namespace TomatoPHP\FilamentFcm\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Model;
