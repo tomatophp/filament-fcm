@@ -1,6 +1,6 @@
 <?php
 
-namespace TomatoPHP\FilamentAlerts\Traits;
+namespace TomatoPHP\FilamentFcm\Traits;
 
 use TomatoPHP\FilamentFcm\Jobs\NotifyFCMJob;
 use TomatoPHP\FilamentFcm\Models\UserToken;
