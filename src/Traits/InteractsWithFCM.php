@@ -31,7 +31,7 @@ trait InteractsWithFCM
             'url' => $url,
             'type' => $type,
             'data' => $data,
-            'sendToDatabase' => sendToDatabase,
+            'sendToDatabase' => $sendToDatabase,
         ]));
     }
 
