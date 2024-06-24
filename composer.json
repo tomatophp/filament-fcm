@@ -40,6 +40,7 @@
         "filament/filament": "^3.0.0",
         "filament/notifications": "^3.0.0",
         "tomatophp/console-helpers": "^1.1",
-        "tomatophp/fcm-notifications": "^1.0"
+        "tomatophp/fcm-notifications": "^1.0",
+        "mobiledetect/mobiledetectlib": "^4.8"
     }
 }

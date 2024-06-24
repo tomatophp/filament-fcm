@@ -2,6 +2,7 @@
 
 namespace TomatoPHP\FilamentFcm\Livewire;
 
+use Detection\MobileDetect;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Livewire\Attributes\On;
@@ -12,16 +13,17 @@ class Firebase extends Component
     #[On('fcm-token')]
     public function fcmToken(string $token)
     {
+        $detect = new MobileDetect();
         if(auth()->user()){
             $user = auth()->user();
-            $getToken = $user->setFCM('fcm-web')->userTokensFcm()->where('provider', 'fcm-web')->first();
+            $getToken = $user->setFCM($detect->isMobile() ? 'fcm-api' :'fcm-web')->userTokensFcm()->where('provider', $detect->isMobile() ? 'fcm-api' :'fcm-web')->first();
             if($getToken){
                 $getToken->provider_token = $token;
                 $getToken->save();
             }
             else {
-                $user->setFCM('fcm-web')->userTokensFcm()->create([
-                    'provider' => 'fcm-web',
+                $user->setFCM($detect->isMobile() ? 'fcm-api' :'fcm-web')->userTokensFcm()->create([
+                    'provider' => $detect->isMobile() ? 'fcm-api' :'fcm-web',
                     'provider_token' => $token
                 ]);
             }

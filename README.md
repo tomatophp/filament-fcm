@@ -28,6 +28,9 @@ FIREBASE_MESSAGING_SENDER_ID=
 FIREBASE_APP_ID=
 FIREBASE_MEASUREMENT_ID=
 
+# Firebase Admin SDK
+FIREBASE_CREDENTIALS=
+
 # Firebase Cloud Messaging
 FIREBASE_VAPID=
 
@@ -72,9 +75,46 @@ Notification::make('send')
         ->url('https://google.com')
         ->markAsRead()
     ])
-    ->sendToFCM(auth()->user())
+    ->sendToFCM(
+        user: auth()->user(),
+        data: [
+            'key' => 'value'
+        ],
+        sendToDatabase: false,
+        type: 'fcm-web' // or fcm-api
+    )
 ```
 
+or you can send it directly from the user model
+
+```php
+
+$user->notifyFCMSDK(
+    message: $this->message,
+    type: $this->provider,
+    title: $this->title,
+    url: $this->url,
+    image: $this->image,
+    icon: $this->icon,
+    data: [
+        'url' => $this->url,
+        'id' => $this->model_id,
+        'actions' => [],
+        'body' => $this->message,
+        'color' => null,
+        'duration' => null,
+        'icon' => $this->icon,
+        'iconColor' => null,
+        'status' => null,
+        'title' => $this->title,
+        'view' => null,
+        'viewData' => null,
+        'data'=> $this->data
+    ],
+    sendToDatabase: false
+);
+
+```
 ## Publish Assets
 
 you can publish config file by use this command

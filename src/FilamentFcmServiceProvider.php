@@ -50,13 +50,13 @@ class FilamentFcmServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
-        Notification::macro('sendToFCM', function (Model $user, array $data=[], ?bool $sendToDatabase=true): static
+        Notification::macro('sendToFCM', function (Model $user, array $data=[], ?bool $sendToDatabase=true, ?string $type ='fcm-web'): static
         {
             /** @var Notification $this */
             $user->notifyFCMSDK(
                 title: $this->title,
                 message: $this->body,
-                type: 'fcm-web',
+                type: $type,
                 url: count($this->actions)? $this->actions[0]->getUrl()  : null,
                 icon: $this->icon,
                 data: [
