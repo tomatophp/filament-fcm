@@ -25,12 +25,10 @@
             }
             navigator.serviceWorker.getRegistration().then(async (reg) => {
                 let token = await getToken(messaging, {vapidKey: "{{ config('filament-fcm.vapid') }}"});
-                console.log(token);
                 Livewire.dispatch('fcm-token', { token: token });
 
 
                 onMessage(messaging, (payload) => {
-                    console.log(payload);
                     Livewire.dispatch('fcm-notification', {data: payload})
                     // push notification can send event.data.json() as well
                     const options = {
