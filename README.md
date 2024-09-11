@@ -3,7 +3,6 @@
 # Filament Firebase Integration
 
 [![Latest Stable Version](https://poser.pugx.org/tomatophp/filament-fcm/version.svg)](https://packagist.org/packages/tomatophp/filament-fcm)
-[![PHP Version Require](http://poser.pugx.org/tomatophp/filament-fcm/require/php)](https://packagist.org/packages/tomatophp/filament-fcm)
 [![License](https://poser.pugx.org/tomatophp/filament-fcm/license.svg)](https://packagist.org/packages/tomatophp/filament-fcm)
 [![Downloads](https://poser.pugx.org/tomatophp/filament-fcm/d/total.svg)](https://packagist.org/packages/tomatophp/filament-fcm)
 
@@ -136,26 +135,6 @@ you can publish migrations file by use this command
 php artisan vendor:publish --tag="filament-fcm-migrations"
 ```
 
-## Support
+## Other Filament Packages
 
-you can join our discord server to get support [TomatoPHP](https://discord.gg/Xqmt35Uh)
-
-## Docs
-
-you can check docs of this package on [Docs](https://docs.tomatophp.com/filament/filament-fcm)
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Security
-
-Please see [SECURITY](SECURITY.md) for more information about security.
-
-## Credits
-
-- [Fady Mondy](https://wa.me/+201207860084)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+Checkout our [Awesome TomatoPHP](https://github.com/tomatophp/awesome)
