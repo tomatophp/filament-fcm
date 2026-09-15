@@ -3,87 +3,134 @@
 namespace TomatoPHP\FilamentFcm\Livewire;
 
 use Detection\MobileDetect;
-use Filament\Notifications\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Firebase extends Component
 {
+    /**
+     * Store the browser / device FCM token of the signed in user, one token per provider.
+     */
     #[On('fcm-token')]
-    public function fcmToken(string $token)
+    public function fcmToken(string $token): void
     {
-        $detect = new MobileDetect();
-        if(auth()->user()){
-            $user = auth()->user();
-            $getToken = $user->setFCM($detect->isMobile() ? 'fcm-api' :'fcm-web')->userTokensFcm()->where('provider', $detect->isMobile() ? 'fcm-api' :'fcm-web')->first();
-            if($getToken){
-                $getToken->provider_token = $token;
-                $getToken->save();
-            }
-            else {
-                $user->setFCM($detect->isMobile() ? 'fcm-api' :'fcm-web')->userTokensFcm()->create([
-                    'provider' => $detect->isMobile() ? 'fcm-api' :'fcm-web',
-                    'provider_token' => $token
-                ]);
-            }
+        $user = auth()->user();
+
+        if (! $user || blank($token)) {
+            return;
         }
+
+        $detect = new MobileDetect;
+        $detect->setUserAgent((string) request()->userAgent());
+        $provider = $detect->isMobile() ? 'fcm-api' : 'fcm-web';
+
+        $userToken = $user->setFCM($provider)->userTokensFcm()->first();
+
+        if ($userToken) {
+            $userToken->provider_token = $token;
+            $userToken->save();
+
+            return;
+        }
+
+        $user->setFCM($provider)->userTokensFcm()->create([
+            'provider' => $provider,
+            'provider_token' => $token,
+        ]);
     }
 
+    /**
+     * Show a foreground push message as a Filament notification.
+     */
     #[On('fcm-notification')]
-    public function fcmNotification(mixed $data)
+    public function fcmNotification(mixed $data = null): void
     {
-        $actions = [];
-        if(isset($data['data'])){
-            if(isset($data['data']['actions']) && is_object(json_decode($data['data']['actions']))){
-                foreach (json_decode($data['data']['actions']) as $action){
-                    $actions[] = Action::make($action->name)
-                        ->color($action->color)
-                        ->eventData($action->eventData)
-                        ->icon($action->icon)
-                        ->iconPosition($action->iconPosition)
-                        ->iconSize($action->iconSize)
-                        ->outlined($action->isOutlined)
-                        ->disabled($action->isDisabled)
-                        ->label($action->label)
-                        ->url($action->url)
-                        ->close($action->shouldClose)
-                        ->size($action->size)
-                        ->tooltip($action->tooltip)
-                        ->view($action->view)
-                        ->markAsUnread($action->shouldMarkAsUnRead??false)
-                        ->markAsRead($action->shouldMarkAsRead??false);
-                }
-            }
+        $payload = is_array($data) ? ($data['data'] ?? null) : null;
+
+        if (! is_array($payload) || (blank($payload['title'] ?? null) && blank($payload['body'] ?? null))) {
+            return;
         }
 
-        if(isset($data['data']['sendToDatabase']) && $data['data']['sendToDatabase'] === true){
-            Notification::make($data['data']['id'])
-                ->title($data['data']['title'])
-                ->actions($actions)
-                ->body($data['data']['body'])
-                ->icon($data['data']['icon'])
-                ->iconColor($data['data']['iconColor'])
-                ->color($data['data']['color'])
-                ->duration($data['data']['duration'])
-                ->send()
-                ->sendToDatabase(auth()->user());
+        $notification = Notification::make(filled($payload['id'] ?? null) ? (string) $payload['id'] : null)
+            ->title($payload['title'] ?? null)
+            ->body($payload['body'] ?? null)
+            ->actions($this->actionsFrom($payload['actions'] ?? null));
+
+        if (filled($payload['icon'] ?? null)) {
+            $notification->icon($payload['icon']);
         }
-        else {
-            Notification::make($data['data']['id'])
-                ->title($data['data']['title'])
-                ->actions($actions)
-                ->body($data['data']['body'])
-                ->icon($data['data']['icon'])
-                ->iconColor($data['data']['iconColor'])
-                ->color($data['data']['color'])
-                ->duration($data['data']['duration'])
-                ->send();
+
+        if (filled($payload['iconColor'] ?? null)) {
+            $notification->iconColor($payload['iconColor']);
+        }
+
+        if (filled($payload['color'] ?? null)) {
+            $notification->color($payload['color']);
+        }
+
+        if (filled($payload['status'] ?? null)) {
+            $notification->status($payload['status']);
+        }
+
+        if (filled($payload['duration'] ?? null)) {
+            $notification->duration(is_numeric($payload['duration']) ? (int) $payload['duration'] : $payload['duration']);
+        }
+
+        $notification->send();
+
+        if (filter_var($payload['sendToDatabase'] ?? false, FILTER_VALIDATE_BOOL) && auth()->user()) {
+            $notification->sendToDatabase(auth()->user());
         }
     }
 
-    public function render()
+    /**
+     * Rebuild the notification actions sent in the push payload: either the serialized
+     * actions of a Filament notification (a JSON list) or a single `{"url": ...}` link.
+     *
+     * @return array<int, Action>
+     */
+    protected function actionsFrom(mixed $payload): array
     {
-        return view('filament-fcm::firebase-base');
+        $decoded = is_string($payload) ? json_decode($payload, true) : $payload;
+
+        if (! is_array($decoded) || $decoded === []) {
+            return [];
+        }
+
+        if (! array_is_list($decoded)) {
+            return filled($decoded['url'] ?? null)
+                ? [Action::make('view')->label(trans('filament-actions::view.single.label'))->url($decoded['url'])->markAsRead()]
+                : [];
+        }
+
+        $actions = [];
+
+        foreach ($decoded as $action) {
+            if (! is_array($action) || blank($action['name'] ?? null)) {
+                continue;
+            }
+
+            $actions[] = Action::make($action['name'])
+                ->label($action['label'] ?? $action['name'])
+                ->color($action['color'] ?? null)
+                ->icon($action['icon'] ?? null)
+                ->url($action['url'] ?? null, (bool) ($action['shouldOpenUrlInNewTab'] ?? false))
+                ->close((bool) ($action['shouldClose'] ?? false))
+                ->markAsRead((bool) ($action['shouldMarkAsRead'] ?? false))
+                ->markAsUnread((bool) ($action['shouldMarkAsUnread'] ?? false));
+        }
+
+        return $actions;
+    }
+
+    public function render(): View
+    {
+        return view('filament-fcm::firebase-base', [
+            'firebaseConfig' => array_filter((array) config('filament-fcm.project'), fn (mixed $value): bool => filled($value)),
+            'vapid' => (string) config('filament-fcm.vapid'),
+        ]);
     }
 }

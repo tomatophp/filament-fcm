@@ -4,11 +4,9 @@ namespace TomatoPHP\FilamentFcm\Console;
 
 use Illuminate\Console\Command;
 use TomatoPHP\ConsoleHelpers\Traits\HandleStub;
-use TomatoPHP\ConsoleHelpers\Traits\RunCommand;
 
 class FilamentFcmInstall extends Command
 {
-    use RunCommand;
     use HandleStub;
 
     /**
@@ -23,37 +21,32 @@ class FilamentFcmInstall extends Command
      *
      * @var string
      */
-    protected $description = 'Generate FCM Worker for Filament FCM.';
+    protected $description = 'Generate the Firebase Messaging service worker (public/firebase-messaging-sw.js) for Filament FCM.';
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
+    public function handle(): int
     {
         $this->info('Install FCM Worker');
+
+        $sound = config('filament-fcm.alert.sound');
+
         $this->generateStubs(
             __DIR__ . '/../../stubs/firebase.stub',
             public_path('firebase-messaging-sw.js'),
             [
-                'apiKey' => config('filament-fcm.project.apiKey'),
-                'authDomain' => config('filament-fcm.project.authDomain'),
-                'databaseURL' => config('filament-fcm.project.databaseURL'),
-                'projectId' => config('filament-fcm.project.projectId'),
-                'storageBucket' => config('filament-fcm.project.storageBucket'),
-                'messagingSenderId' => config('filament-fcm.project.messagingSenderId'),
-                'appId' => config('filament-fcm.project.appId'),
-                'measurementId' => config('filament-fcm.project.measurementId'),
-                'sound' => config('filament-fcm.alert.sound') ? "var audio = new Audio('".config('filament-fcm.alert.sound')."');\n audio.play();": null
+                'apiKey' => (string) config('filament-fcm.project.apiKey'),
+                'authDomain' => (string) config('filament-fcm.project.authDomain'),
+                'databaseURL' => (string) config('filament-fcm.project.databaseURL'),
+                'projectId' => (string) config('filament-fcm.project.projectId'),
+                'storageBucket' => (string) config('filament-fcm.project.storageBucket'),
+                'messagingSenderId' => (string) config('filament-fcm.project.messagingSenderId'),
+                'appId' => (string) config('filament-fcm.project.appId'),
+                'measurementId' => (string) config('filament-fcm.project.measurementId'),
+                'sound' => filled($sound) ? 'new Audio(' . json_encode($sound) . ').play().catch(() => {});' : '',
             ]
         );
-        $this->info('Filament Alerts FCM installed successfully.');
+
+        $this->info('Filament FCM service worker generated at ' . public_path('firebase-messaging-sw.js'));
+
+        return self::SUCCESS;
     }
 }

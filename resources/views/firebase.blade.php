@@ -1,3 +1,1 @@
-@livewire(\TomatoPHP\FilamentFcm\Livewire\Firebase::class)
-
-
+<livewire:filament-fcm />

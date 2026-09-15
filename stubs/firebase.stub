@@ -26,37 +26,31 @@ try
     const messaging = firebase.messaging();
 
     messaging.onBackgroundMessage((payload) => {
-    //
-        {{ sound }}
+        try {
+            {{ sound }}
+        } catch (e) {}
 
-        let options = {
-            body: "",
-            icon: "",
-            image: "",
+        const data = payload.data || {};
+
+        self.registration.showNotification(data.title || '', {
+            body: data.body || '',
+            icon: data.image || undefined,
             tag: "alert",
-        };
-
-        if(payload.data.body){
-            options.body = payload.data.body;
-        }
-
-        if(payload.data.image){
-            options.icon = payload.data.image;
-        }
-
-        let notification = self.registration.showNotification(
-            payload.data.title,
-            options
-        );
-
-        if(payload.data.url){
-            // link to page on clicking the notification
-            notification.onclick = (payload) => {
-                window.open(payload.data.url);
-            };
-        }
+            data: { url: data.url || null },
+        });
     });
 }
 catch(e) {
     console.log(e)
 }
+
+// Open the notification link on click.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const url = event.notification.data && event.notification.data.url;
+
+    if (url) {
+        event.waitUntil(clients.openWindow(url));
+    }
+});

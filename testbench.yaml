@@ -1,0 +1,3 @@
+providers:
+  - TomatoPHP\FilamentFcm\FilamentFcmServiceProvider
+  - TomatoPHP\FilamentFcm\Tests\AdminPanelProvider

@@ -2,79 +2,84 @@
 
 namespace TomatoPHP\FilamentFcm;
 
-use Filament\Notifications\Actions\Action;
-use Filament\Notifications\Actions\ActionGroup;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
+use TomatoPHP\FilamentFcm\Console\FilamentFcmInstall;
 use TomatoPHP\FilamentFcm\Livewire\Firebase;
-
 
 class FilamentFcmServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //Register generate command
+        // Register generate command
         $this->commands([
-           \TomatoPHP\FilamentFcm\Console\FilamentFcmInstall::class,
+            FilamentFcmInstall::class,
         ]);
 
-        //Register Config file
-        $this->mergeConfigFrom(__DIR__.'/../config/filament-fcm.php', 'filament-fcm');
+        // Register Config file
+        $this->mergeConfigFrom(__DIR__ . '/../config/filament-fcm.php', 'filament-fcm');
 
-        //Publish Config
+        // Publish Config
         $this->publishes([
-           __DIR__.'/../config/filament-fcm.php' => config_path('filament-fcm.php'),
+            __DIR__ . '/../config/filament-fcm.php' => config_path('filament-fcm.php'),
         ], 'filament-fcm-config');
 
-        //Register Migrations
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        // Register Migrations
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
-        //Publish Migrations
+        // Publish Migrations
         $this->publishes([
-           __DIR__.'/../database/migrations' => database_path('migrations'),
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
         ], 'filament-fcm-migrations');
 
-        //Register views
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'filament-fcm');
+        // Register views
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'filament-fcm');
 
-        //Publish Views
+        // Publish Views
         $this->publishes([
-           __DIR__.'/../resources/views' => resource_path('views/vendor/filament-fcm'),
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/filament-fcm'),
         ], 'filament-fcm-views');
-
-        Livewire::component(Firebase::class);
     }
 
     public function boot(): void
     {
+        Livewire::component('filament-fcm', Firebase::class);
 
-        Notification::macro('sendToFCM', function (Model $user, array $data=[], ?bool $sendToDatabase=true, ?string $type ='fcm-web'): static
-        {
+        Notification::macro('sendToFCM', function (Model $user, array $data = [], ?bool $sendToDatabase = true, ?string $type = 'fcm-web'): static {
             /** @var Notification $this */
+            $payload = $this->toArray();
+
+            $url = null;
+
+            foreach ($this->getActions() as $action) {
+                if ($action instanceof Action && filled($action->getUrl())) {
+                    $url = $action->getUrl();
+
+                    break;
+                }
+            }
+
+            $title = $payload['title'] instanceof Htmlable ? $payload['title']->toHtml() : $payload['title'];
+            $body = $payload['body'] instanceof Htmlable ? $payload['body']->toHtml() : $payload['body'];
+
             $user->notifyFCMSDK(
-                title: $this->title,
-                message: $this->body,
-                type: $type,
-                url: count($this->actions)? $this->actions[0]->getUrl()  : null,
-                icon: $this->icon,
+                message: (string) $body,
+                type: $type ?? 'fcm-web',
+                title: filled($title) ? (string) $title : null,
+                url: $url,
+                icon: is_string($payload['icon']) ? $payload['icon'] : null,
                 data: [
-                    'url' => count($this->actions)? $this->actions[0]->getUrl()  : null,
-                    'id' => $this->getId(),
-                    'actions' => array_map(fn (Action | ActionGroup $action): array => $action->toArray(), $this->getActions()),
-                    'body' => $this->getBody(),
-                    'color' => $this->getColor(),
-                    'duration' => $this->getDuration(),
-                    'icon' => $this->getIcon(),
-                    'iconColor' => $this->getIconColor(),
-                    'status' => $this->getStatus(),
-                    'title' => $this->getTitle(),
-                    'view' => $this->getView(),
-                    'viewData' => $this->getViewData(),
-                    'data'=> $data
+                    ...$payload,
+                    'title' => $title,
+                    'body' => $body,
+                    'url' => $url,
+                    'data' => $data,
                 ],
-                sendToDatabase: $sendToDatabase
+                sendToDatabase: $sendToDatabase ?? true,
             );
 
             return $this;

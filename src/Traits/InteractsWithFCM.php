@@ -2,26 +2,29 @@
 
 namespace TomatoPHP\FilamentFcm\Traits;
 
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use TomatoPHP\FilamentFcm\Jobs\NotifyFCMJob;
 use TomatoPHP\FilamentFcm\Models\UserToken;
 
 trait InteractsWithFCM
 {
+    /**
+     * The token provider used for the next push: `fcm-web` (browser) or `fcm-api` (mobile).
+     */
+    protected ?string $fcm = null;
 
-    protected ?string $fcm;
-    protected ?int $fcmId;
+    protected ?int $fcmId = null;
 
     public function notifyFCMSDK(
         string $message,
-        string $type='web',
-        ?string $title=null,
-        ?string $url=null,
-        ?string $image=null,
-        ?string $icon=null,
-        ?array $data=[],
+        string $type = 'fcm-web',
+        ?string $title = null,
+        ?string $url = null,
+        ?string $image = null,
+        ?string $icon = null,
+        ?array $data = [],
         bool $sendToDatabase = true
-    )
-    {
+    ): void {
         dispatch(new NotifyFCMJob([
             'user' => $this,
             'title' => $title,
@@ -35,46 +38,41 @@ trait InteractsWithFCM
         ]));
     }
 
-    public function initializeUseNotifications()
-    {
-        $this->appends[] = 'fcm';
-        $this->appends[] = 'fcmID';
-    }
-
-    public function setFcmAttribute($value)
+    public function setFcmAttribute(?string $value): void
     {
         $this->fcm = $value;
     }
 
-    public function getFcmAttribute()
+    public function getFcmAttribute(): string
     {
-        return 'fcm-web';
+        return $this->fcm ?? 'fcm-web';
     }
 
-    public function setFcmIdAttribute($value)
+    public function setFcmIdAttribute(?int $value): void
     {
         $this->fcmId = $value;
     }
 
-    public function getFcmIdAttribute()
+    public function getFcmIdAttribute(): mixed
     {
-        return $this->id;
+        return $this->fcmId ?? $this->getKey();
     }
 
-    public function setFCM(?string $type='fcm-web'): static
+    public function setFCM(?string $type = 'fcm-web'): static
     {
-        $this->fcm = $type;
-        $this->fcmId = $this->id;
+        $this->fcm = $type ?? 'fcm-web';
+        $this->fcmId = $this->getKey();
+
         return $this;
     }
 
-    public function userTokensFcm()
+    public function userTokensFcm(): MorphOne
     {
-        return $this->morphOne(UserToken::class, 'model')->where('provider', $this->fcm);
+        return $this->morphOne(UserToken::class, 'model')->where('provider', $this->fcm ?? 'fcm-web');
     }
 
-    public function routeNotificationForFcm()
+    public function routeNotificationForFcm(): string
     {
-        return $this->userTokensFcm ? $this->userTokensFcm->provider_token : '';
+        return (string) $this->userTokensFcm()->value('provider_token');
     }
 }
