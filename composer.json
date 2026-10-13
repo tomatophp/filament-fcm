@@ -2,6 +2,12 @@
     "name": "tomatophp/filament-fcm",
     "type": "library",
     "description": "Firebase Cloud Messaging integration to Native FilamentPHP Notification Package",
+    "homepage": "https://tomatophp.com/en/plugins/filament-fcm",
+    "support": {
+        "issues": "https://github.com/tomatophp/filament-fcm/issues",
+        "source": "https://github.com/tomatophp/filament-fcm",
+        "docs": "https://tomatophp.com/en/plugins/filament-fcm"
+    },
     "keywords": [
         "php",
         "laravel",
